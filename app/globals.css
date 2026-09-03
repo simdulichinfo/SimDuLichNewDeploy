@@ -1,0 +1,68 @@
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: 'Open Sans', ui-sans-serif, system-ui, sans-serif;
+  --font-roboto: 'Roboto', sans-serif;
+
+  --color-primary: hsl(286 50% 32%);
+  --color-primary-foreground: hsl(0 0% 100%);
+  --color-secondary: hsl(331 85% 47%);
+  --color-secondary-foreground: hsl(0 0% 100%);
+  --color-yellow-brand: hsl(38 96% 54%);
+  --color-background: hsl(286 20% 98%);
+  --color-foreground: hsl(0 0% 9%);
+  --color-card: hsl(0 0% 100%);
+  --color-card-foreground: hsl(0 0% 9%);
+  --color-popover: hsl(0 0% 100%);
+  --color-popover-foreground: hsl(0 0% 9%);
+  --color-muted: hsl(286 20% 96%);
+  --color-muted-foreground: hsl(286 10% 50%);
+  --color-accent: hsl(286 50% 96%);
+  --color-accent-foreground: hsl(286 50% 32%);
+  --color-destructive: hsl(4 86% 58%);
+  --color-destructive-foreground: hsl(0 0% 100%);
+  --color-bluelight: hsl(286 50% 96%);
+  --color-border: hsl(0 0% 85%);
+  --color-input: hsl(0 0% 100%);
+  --color-ring: hsl(286 50% 32%);
+  --color-brand: hsl(286 50% 32%);
+  --color-brand-hover: hsl(286 50% 25%);
+  --color-brand-light: hsl(286 50% 96%);
+  --radius: 2rem;
+}
+
+@utility bg-brand-gradient {
+  background-image: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
+}
+
+@utility text-brand-gradient {
+  background-image: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.bg-primary,
+.hover\:bg-primary:hover,
+.active\:bg-primary:active,
+.focus\:bg-primary:focus {
+  background-image: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%) !important;
+  background-color: transparent !important;
+}
+
+@layer base {
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]),
+  summary,
+  label[for] {
+    cursor: pointer;
+  }
+}
+
+body {
+  background-color: hsl(286 20% 98%);
+  color: hsl(0 0% 9%);
+  font-family: var(--font-sans);
+  overflow-x: hidden;
+}
