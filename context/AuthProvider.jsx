@@ -1,16 +1,23 @@
 'use client';
 
 import { createContext, useContext, useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { createClient } from '../lib/supabase/client';
 
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
+  const router = useRouter();
   const [supabase] = useState(() => createClient());
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!supabase ? false : true);
 
   useEffect(() => {
+    if (!supabase) {
+      console.warn('Supabase not configured — NEXT_PUBLIC_SUPABASE_URL/NEXT_PUBLIC_SUPABASE_ANON_KEY missing');
+      return;
+    }
+
     supabase.auth.getUser().then(({ data }) => {
       setUser(data.user);
       setLoading(false);
@@ -24,7 +31,11 @@ export function AuthProvider({ children }) {
   }, [supabase]);
 
   const logout = async () => {
+    if (!supabase) {
+      return;
+    }
     await supabase.auth.signOut();
+    router.refresh();
   };
 
   return (
