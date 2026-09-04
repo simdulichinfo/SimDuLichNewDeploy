@@ -5,11 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Eye, EyeOff } from 'lucide-react';
 import { createClient } from '../../../lib/supabase/client';
-import { inputClass } from '../authUI';
-
-const ERROR_MESSAGES = {
-  'Invalid login credentials': 'Email hoặc mật khẩu không đúng.',
-};
+import { inputClass, translateAuthError } from '../authUI';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -27,7 +23,7 @@ export default function LoginPage() {
     const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
     setSubmitting(false);
     if (signInError) {
-      setError(ERROR_MESSAGES[signInError.message] || signInError.message);
+      setError(translateAuthError(signInError.message));
       return;
     }
     router.push('/account');
