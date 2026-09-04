@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { Menu, X } from 'lucide-react';
+import { useAuth } from '../context/AuthProvider';
 
 const NAV_LINKS = [
   { name: 'Mua eSIM', href: '/esim' },
@@ -14,6 +15,7 @@ const NAV_LINKS = [
 
 export default function Header({ currentPath }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { user, isAuthenticated, logout } = useAuth();
 
   return (
     <>
@@ -53,12 +55,24 @@ export default function Header({ currentPath }) {
                 <Menu className="h-5 w-5 text-primary sm:h-6 sm:w-6" />
               </button>
 
-              <Link
-                href="/login"
-                className="items-center justify-center text-sm font-semibold transition-all duration-200 text-white h-10 py-2 hidden lg:flex rounded-full px-6 bg-brand-gradient hover:opacity-95 shadow-md shadow-secondary/20"
-              >
-                Đăng nhập
-              </Link>
+              {isAuthenticated ? (
+                <div className="hidden lg:flex items-center gap-2">
+                  <span className="text-sm font-semibold text-foreground/80 px-2">{user?.user_metadata?.name || user?.email}</span>
+                  <button
+                    onClick={logout}
+                    className="flex items-center justify-center h-10 rounded-full px-4 text-sm font-semibold text-foreground/70 hover:bg-white/20 transition-colors"
+                  >
+                    Đăng xuất
+                  </button>
+                </div>
+              ) : (
+                <Link
+                  href="/login"
+                  className="items-center justify-center text-sm font-semibold transition-all duration-200 text-white h-10 py-2 hidden lg:flex rounded-full px-6 bg-brand-gradient hover:opacity-95 shadow-md shadow-secondary/20"
+                >
+                  Đăng nhập
+                </Link>
+              )}
             </div>
           </div>
         </div>
@@ -94,13 +108,25 @@ export default function Header({ currentPath }) {
               </div>
             </div>
 
-            <Link
-              href="/login"
-              onClick={() => setIsMobileMenuOpen(false)}
-              className="w-full text-center font-semibold text-white py-3 rounded-full bg-brand-gradient hover:opacity-95 transition-all"
-            >
-              Đăng nhập
-            </Link>
+            {isAuthenticated ? (
+              <button
+                onClick={() => {
+                  setIsMobileMenuOpen(false);
+                  logout();
+                }}
+                className="w-full text-center font-semibold text-white py-3 rounded-full bg-brand-gradient hover:opacity-95 transition-all"
+              >
+                Đăng xuất
+              </button>
+            ) : (
+              <Link
+                href="/login"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="w-full text-center font-semibold text-white py-3 rounded-full bg-brand-gradient hover:opacity-95 transition-all"
+              >
+                Đăng nhập
+              </Link>
+            )}
           </div>
         </div>
       )}
