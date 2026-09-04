@@ -37,6 +37,11 @@ yarn-error.log*
 # vercel
 .vercel
 
+# git worktrees created by the Claude Code harness live nested inside the repo —
+# exclude so git status/merge and Vitest's test discovery don't see them as part
+# of the main checkout (a linked worktree is a full separate copy of every file).
+.claude/worktrees/
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts
