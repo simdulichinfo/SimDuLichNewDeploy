@@ -20,6 +20,11 @@ export default function LoginPage() {
     setError('');
     setSubmitting(true);
     const supabase = createClient();
+    if (!supabase) {
+      setError('Hệ thống chưa được cấu hình. Vui lòng thử lại sau.');
+      setSubmitting(false);
+      return;
+    }
     const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
     setSubmitting(false);
     if (signInError) {

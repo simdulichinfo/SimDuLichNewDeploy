@@ -10,9 +10,10 @@ vi.mock('next/navigation', () => ({
 
 const signUpMock = vi.fn();
 vi.mock('../../../../lib/supabase/client', () => ({
-  createClient: () => ({ auth: { signUp: signUpMock } }),
+  createClient: vi.fn(() => ({ auth: { signUp: signUpMock } })),
 }));
 
+import { createClient } from '../../../../lib/supabase/client';
 import RegisterPage from '../page';
 
 describe('RegisterPage', () => {
@@ -84,5 +85,21 @@ describe('RegisterPage', () => {
 
     expect(await screen.findByText('Mật khẩu xác nhận không khớp.')).toBeInTheDocument();
     expect(signUpMock).not.toHaveBeenCalled();
+  });
+
+  it('createClient trả null (chưa cấu hình Supabase) thì hiện lỗi tiếng Việt, không gọi signUp', async () => {
+    vi.mocked(createClient).mockReturnValueOnce(null);
+    render(<RegisterPage />);
+
+    await userEvent.type(screen.getByPlaceholderText('Họ tên'), 'Nguyễn Văn A');
+    await userEvent.type(screen.getByPlaceholderText('Email'), 'a@simdulich.vn');
+    await userEvent.type(screen.getByPlaceholderText('Mật khẩu'), 'matkhau123');
+    await userEvent.type(screen.getByPlaceholderText('Xác nhận mật khẩu'), 'matkhau123');
+    await userEvent.click(screen.getByRole('checkbox'));
+    await userEvent.click(screen.getByRole('button', { name: 'Đăng ký' }));
+
+    expect(await screen.findByText('Hệ thống chưa được cấu hình. Vui lòng thử lại sau.')).toBeInTheDocument();
+    expect(signUpMock).not.toHaveBeenCalled();
+    expect(pushMock).not.toHaveBeenCalled();
   });
 });

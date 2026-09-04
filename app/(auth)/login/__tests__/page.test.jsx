@@ -10,9 +10,10 @@ vi.mock('next/navigation', () => ({
 
 const signInWithPasswordMock = vi.fn();
 vi.mock('../../../../lib/supabase/client', () => ({
-  createClient: () => ({ auth: { signInWithPassword: signInWithPasswordMock } }),
+  createClient: vi.fn(() => ({ auth: { signInWithPassword: signInWithPasswordMock } })),
 }));
 
+import { createClient } from '../../../../lib/supabase/client';
 import LoginPage from '../page';
 
 describe('LoginPage', () => {
@@ -46,6 +47,19 @@ describe('LoginPage', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Đăng nhập' }));
 
     expect(await screen.findByText('Email hoặc mật khẩu không đúng.')).toBeInTheDocument();
+    expect(pushMock).not.toHaveBeenCalled();
+  });
+
+  it('createClient trả null (chưa cấu hình Supabase) thì hiện lỗi tiếng Việt, không gọi signInWithPassword', async () => {
+    vi.mocked(createClient).mockReturnValueOnce(null);
+    render(<LoginPage />);
+
+    await userEvent.type(screen.getByPlaceholderText('Email'), 'a@simdulich.vn');
+    await userEvent.type(screen.getByPlaceholderText('Mật khẩu'), 'matkhau123');
+    await userEvent.click(screen.getByRole('button', { name: 'Đăng nhập' }));
+
+    expect(await screen.findByText('Hệ thống chưa được cấu hình. Vui lòng thử lại sau.')).toBeInTheDocument();
+    expect(signInWithPasswordMock).not.toHaveBeenCalled();
     expect(pushMock).not.toHaveBeenCalled();
   });
 });

@@ -70,6 +70,11 @@ export default function RegisterPage() {
 
     setSubmitting(true);
     const supabase = createClient();
+    if (!supabase) {
+      setError('Hệ thống chưa được cấu hình. Vui lòng thử lại sau.');
+      setSubmitting(false);
+      return;
+    }
     const { data, error: signUpError } = await supabase.auth.signUp({
       email: form.email,
       password: form.password,
