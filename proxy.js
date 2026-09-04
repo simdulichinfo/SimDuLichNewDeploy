@@ -3,7 +3,7 @@ import { updateSession } from './lib/supabase/middleware';
 
 const PROTECTED_PATHS = ['/account'];
 
-export async function middleware(request) {
+export async function proxy(request) {
   const { supabaseResponse, user } = await updateSession(request);
 
   const isProtected = PROTECTED_PATHS.some((path) =>
