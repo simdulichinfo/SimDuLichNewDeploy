@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Eye, EyeOff } from 'lucide-react';
 import { createClient } from '../../../lib/supabase/client';
-import { inputClass } from '../authUI';
+import { inputClass, translateAuthError } from '../authUI';
 
 function FieldLabel({ children, required }) {
   return (
@@ -45,6 +45,7 @@ export default function RegisterPage() {
   const [form, setForm] = useState({ name: '', email: '', phone: '', password: '', confirmPassword: '' });
   const [agreed, setAgreed] = useState(false);
   const [error, setError] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
   const updateField = (field) => (e) => setForm((prev) => ({ ...prev, [field]: e.target.value }));
@@ -52,6 +53,7 @@ export default function RegisterPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setSuccessMessage('');
 
     if (form.password.length < 6) {
       setError('Mật khẩu tối thiểu 6 ký tự.');
@@ -68,14 +70,18 @@ export default function RegisterPage() {
 
     setSubmitting(true);
     const supabase = createClient();
-    const { error: signUpError } = await supabase.auth.signUp({
+    const { data, error: signUpError } = await supabase.auth.signUp({
       email: form.email,
       password: form.password,
       options: { data: { name: form.name, phone: form.phone } },
     });
     setSubmitting(false);
     if (signUpError) {
-      setError(signUpError.message);
+      setError(translateAuthError(signUpError.message));
+      return;
+    }
+    if (!data?.session) {
+      setSuccessMessage('Đăng ký thành công. Vui lòng kiểm tra email để xác nhận tài khoản.');
       return;
     }
     router.push('/account');
@@ -95,6 +101,11 @@ export default function RegisterPage() {
             {error && (
               <div className="mb-4 rounded-xl bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-600">
                 {error}
+              </div>
+            )}
+            {successMessage && (
+              <div className="mb-4 rounded-xl bg-green-50 border border-green-200 px-4 py-3 text-sm text-green-700">
+                {successMessage}
               </div>
             )}
 
