@@ -6,15 +6,21 @@ vi.mock('../../context/AuthProvider', () => ({
   useAuth: () => useAuthMock(),
 }));
 
+const usePathnameMock = vi.fn();
+vi.mock('next/navigation', () => ({
+  usePathname: () => usePathnameMock(),
+}));
+
 import Header from '../Header';
 
 describe('Header', () => {
   beforeEach(() => {
     useAuthMock.mockReturnValue({ user: null, isAuthenticated: false, logout: vi.fn() });
+    usePathnameMock.mockReturnValue('/');
   });
 
   it('hiển thị logo và các link điều hướng chính', () => {
-    render(<Header currentPath="/" />);
+    render(<Header />);
     expect(screen.getByAltText('SIMDULICH.VN Logo')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Về chúng tôi' })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Đăng nhập' })).toHaveAttribute('href', '/login');
@@ -26,9 +32,15 @@ describe('Header', () => {
       isAuthenticated: true,
       logout: vi.fn(),
     });
-    render(<Header currentPath="/" />);
+    render(<Header />);
     expect(screen.getByText('Nguyễn Văn A')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Đăng xuất' })).toBeInTheDocument();
     expect(screen.queryByRole('link', { name: 'Đăng nhập' })).not.toBeInTheDocument();
+  });
+
+  it('đánh dấu link active theo pathname hiện tại (usePathname)', () => {
+    usePathnameMock.mockReturnValue('/about');
+    render(<Header />);
+    expect(screen.getByRole('link', { name: 'Về chúng tôi' })).toHaveClass('text-brand-gradient');
   });
 });

@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { Menu, X } from 'lucide-react';
 import { useAuth } from '../context/AuthProvider';
 
@@ -13,9 +14,10 @@ const NAV_LINKS = [
   { name: 'Blog', href: '/blog' },
 ];
 
-export default function Header({ currentPath }) {
+export default function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { user, isAuthenticated, logout } = useAuth();
+  const currentPath = usePathname();
 
   return (
     <>
