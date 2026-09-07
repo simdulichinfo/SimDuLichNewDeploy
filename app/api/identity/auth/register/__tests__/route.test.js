@@ -55,4 +55,14 @@ describe('POST /api/identity/auth/register', () => {
     expect(response.status).toBe(400);
     expect(body).toEqual({ message: 'Dữ liệu gửi lên không hợp lệ.' });
   });
+
+  it('trả 500 kèm message khi signUp không lỗi nhưng cũng không trả về user', async () => {
+    signUpMock.mockResolvedValue({ data: { user: null, session: null }, error: null });
+
+    const response = await POST(makeRequest({ name: 'A', email: 'a@simdulich.vn', phone: '0900000000', password: 'secret123' }));
+    const body = await response.json();
+
+    expect(response.status).toBe(500);
+    expect(body).toEqual({ message: 'Không tạo được tài khoản, vui lòng thử lại.' });
+  });
 });

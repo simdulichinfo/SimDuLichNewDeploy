@@ -27,6 +27,10 @@ export async function POST(request) {
     return NextResponse.json({ message: error.message }, { status: error.status || 400 });
   }
 
+  if (!data?.user) {
+    return NextResponse.json({ message: 'Không tạo được tài khoản, vui lòng thử lại.' }, { status: 500 });
+  }
+
   return NextResponse.json(
     {
       id: data.user.id,
