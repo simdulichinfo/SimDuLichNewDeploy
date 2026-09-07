@@ -92,6 +92,13 @@ Route: `app/api/catalog/admin/products/...`
 durationDays, apiPackageCode, status }` — chú ý khác `products_public` (view công khai): admin
 response có thêm `priceImport`, `apiPackageCode` (không lộ ra ngoài công khai).
 
+**Lưu ý khác biệt với `ProductRequest` gốc bên Java:** bảng `products` ở schema này có 2 cột
+`package_type`/`capacity_bucket` (NOT NULL, dùng để lọc ở `/catalog/catalog/products/search` công
+khai) — cột này **không tồn tại** trong schema Java gốc, là bổ sung riêng của đợt 2. `POST`/`PUT`
+**không** nhận 2 field này trong body — route tự suy ra bằng cách gọi lại hàm `classify(title,
+dataInfo)` (cùng hàm sẽ port ở mục 4, dùng chung, không viết trùng lặp), y hệt cách ~10.016 sản
+phẩm hiện có đã được phân loại lúc nhập ban đầu.
+
 ## 3. Import CSV/Excel thường (không "smart")
 
 `POST /api/catalog/admin/products/import` — multipart: `file` + form field `pricingMode`
