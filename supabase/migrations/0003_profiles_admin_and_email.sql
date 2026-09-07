@@ -78,6 +78,16 @@ language plpgsql
 security definer set search_path = public
 as $$
 begin
+  -- Exemption for direct/service-role/dashboard connections (auth.uid() is
+  -- null there): needed to bootstrap the very first admin, since no
+  -- PostgREST-originated update (anon/authenticated key) can ever reach this
+  -- trigger with a null auth.uid() — the 0001 UPDATE policy's
+  -- `using (auth.uid() = id)` can never match when auth.uid() is null. Do
+  -- not remove this or the first admin can never be promoted.
+  if auth.uid() is null then
+    return new;
+  end if;
+
   if not public.is_admin_or_staff() then
     new.role := old.role;
     new.status := old.status;
