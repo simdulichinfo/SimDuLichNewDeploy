@@ -42,6 +42,9 @@ yarn-error.log*
 # of the main checkout (a linked worktree is a full separate copy of every file).
 .claude/worktrees/
 
+# Claude Code dev-server launch config is machine-specific (local port/command settings)
+.claude/launch.json
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts
