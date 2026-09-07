@@ -2,7 +2,15 @@ import { NextResponse } from 'next/server';
 import { createApiClient } from '../../../../../lib/supabase/apiClient';
 
 export async function POST(request) {
-  const { name, email, phone, password } = await request.json();
+  let name;
+  let email;
+  let phone;
+  let password;
+  try {
+    ({ name, email, phone, password } = await request.json());
+  } catch (parseError) {
+    return NextResponse.json({ message: 'Dữ liệu gửi lên không hợp lệ.' }, { status: 400 });
+  }
 
   const supabase = createApiClient();
   if (!supabase) {

@@ -61,4 +61,31 @@ describe('POST /api/identity/auth/refresh', () => {
     expect(response.status).toBe(401);
     expect(body).toEqual({ message: 'Refresh token không hợp lệ hoặc đã hết hạn.' });
   });
+
+  it('trả 500 khi không tìm thấy hồ sơ người dùng sau khi refresh', async () => {
+    refreshSessionMock.mockResolvedValue({
+      data: {
+        user: { id: 'u1' },
+        session: { access_token: 'access-2', refresh_token: 'refresh-2' },
+      },
+      error: null,
+    });
+    fromMock.mockReturnValue(createQueryBuilderMock({ data: null, error: { message: 'boom' } }));
+
+    const response = await POST(makeRequest({ refreshToken: 'refresh-1' }));
+    const body = await response.json();
+
+    expect(response.status).toBe(500);
+    expect(body).toEqual({ message: 'Không tìm thấy hồ sơ người dùng.' });
+  });
+
+  it('trả 400 khi body không phải JSON hợp lệ', async () => {
+    const badRequest = { json: () => Promise.reject(new SyntaxError('Unexpected token')) };
+
+    const response = await POST(badRequest);
+    const body = await response.json();
+
+    expect(response.status).toBe(400);
+    expect(body).toEqual({ message: 'Dữ liệu gửi lên không hợp lệ.' });
+  });
 });

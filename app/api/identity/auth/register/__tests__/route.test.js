@@ -45,4 +45,14 @@ describe('POST /api/identity/auth/register', () => {
     expect(response.status).toBe(400);
     expect(body).toEqual({ message: 'User already registered' });
   });
+
+  it('trả 400 khi body không phải JSON hợp lệ', async () => {
+    const badRequest = { json: () => Promise.reject(new SyntaxError('Unexpected token')) };
+
+    const response = await POST(badRequest);
+    const body = await response.json();
+
+    expect(response.status).toBe(400);
+    expect(body).toEqual({ message: 'Dữ liệu gửi lên không hợp lệ.' });
+  });
 });

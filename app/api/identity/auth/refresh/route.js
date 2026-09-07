@@ -3,7 +3,12 @@ import { createApiClient } from '../../../../../lib/supabase/apiClient';
 import { mapUserResponse } from '../../../../../lib/apiAuth';
 
 export async function POST(request) {
-  const { refreshToken } = await request.json();
+  let refreshToken;
+  try {
+    ({ refreshToken } = await request.json());
+  } catch (parseError) {
+    return NextResponse.json({ message: 'Dữ liệu gửi lên không hợp lệ.' }, { status: 400 });
+  }
 
   const anonClient = createApiClient();
   if (!anonClient) {
@@ -21,6 +26,10 @@ export async function POST(request) {
     .select('id, name, phone, email, role, status')
     .eq('id', data.user.id)
     .single();
+
+  if (!profile) {
+    return NextResponse.json({ message: 'Không tìm thấy hồ sơ người dùng.' }, { status: 500 });
+  }
 
   return NextResponse.json({
     accessToken: data.session.access_token,

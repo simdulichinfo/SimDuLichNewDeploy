@@ -64,4 +64,31 @@ describe('POST /api/identity/auth/login', () => {
     expect(response.status).toBe(401);
     expect(body).toEqual({ message: 'Email hoặc mật khẩu không đúng.' });
   });
+
+  it('trả 500 khi không tìm thấy hồ sơ người dùng sau khi đăng nhập', async () => {
+    signInMock.mockResolvedValue({
+      data: {
+        user: { id: 'u1' },
+        session: { access_token: 'access-1', refresh_token: 'refresh-1' },
+      },
+      error: null,
+    });
+    fromMock.mockReturnValue(createQueryBuilderMock({ data: null, error: null }));
+
+    const response = await POST(makeRequest({ email: 'a@simdulich.vn', password: 'secret123' }));
+    const body = await response.json();
+
+    expect(response.status).toBe(500);
+    expect(body).toEqual({ message: 'Không tìm thấy hồ sơ người dùng.' });
+  });
+
+  it('trả 400 khi body không phải JSON hợp lệ', async () => {
+    const badRequest = { json: () => Promise.reject(new SyntaxError('Unexpected token')) };
+
+    const response = await POST(badRequest);
+    const body = await response.json();
+
+    expect(response.status).toBe(400);
+    expect(body).toEqual({ message: 'Dữ liệu gửi lên không hợp lệ.' });
+  });
 });
