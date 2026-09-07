@@ -21,13 +21,16 @@ export async function POST(request) {
   }
 
   const scopedClient = createApiClient(data.session.access_token);
-  const { data: profile } = await scopedClient
+  const { data: profile, error: profileError } = await scopedClient
     .from('profiles')
     .select('id, name, phone, email, role, status')
     .eq('id', data.user.id)
     .single();
 
   if (!profile) {
+    if (profileError) {
+      console.error('[auth/refresh] profile lookup failed', profileError);
+    }
     return NextResponse.json({ message: 'Không tìm thấy hồ sơ người dùng.' }, { status: 500 });
   }
 

@@ -49,6 +49,44 @@ create policy "Admins can view all profiles"
 -- `with check`, so a user can update any column on their own row via
 -- PostgREST/Supabase, including role/status — self-granting admin and
 -- defeating every requireRole(user, ['admin','staff']) check in the API.
--- Revoking column-level UPDATE privilege on role/status for the
--- `authenticated` role blocks that at the grant level regardless of RLS.
-revoke update (role, status) on public.profiles from authenticated;
+--
+-- IMPORTANT: `revoke update (role, status) on public.profiles from
+-- authenticated;` (the column-level form) is a NO-OP here and must never be
+-- used in isolation. Per Postgres's own REVOKE documentation: "if a role
+-- has been granted privileges on a table, then revoking the same
+-- privileges from individual columns will have no effect." Supabase's
+-- bootstrap grants `authenticated` table-level UPDATE on all tables in
+-- `public` (via `alter default privileges ... grant all on tables ... to
+-- authenticated` plus the initial `grant all`), so a column-level revoke
+-- cannot subtract from that table-level grant — the user could still PATCH
+-- `role`/`status` on their own row. The correct fix is to revoke the
+-- table-level UPDATE grant entirely and re-grant only the safe columns.
+--
+-- As a durable backstop against some future migration re-broadening the
+-- table-level grant (or a client bypassing PostgREST's column grants via a
+-- different path), a BEFORE UPDATE trigger also freezes `role`/`status`
+-- back to their previous values for any request that isn't from an
+-- admin/staff user. This is belt-and-suspenders: the grant/revoke pair is
+-- the primary defense, the trigger is what still holds if that primary
+-- defense is ever accidentally undone.
+revoke update on public.profiles from authenticated, anon;
+grant update (name, phone, email) on public.profiles to authenticated;
+
+create or replace function public.profiles_freeze_privileged_columns()
+returns trigger
+language plpgsql
+security definer set search_path = public
+as $$
+begin
+  if not public.is_admin_or_staff() then
+    new.role := old.role;
+    new.status := old.status;
+  end if;
+  return new;
+end;
+$$;
+
+drop trigger if exists profiles_freeze_privileged_columns on public.profiles;
+create trigger profiles_freeze_privileged_columns
+  before update on public.profiles
+  for each row execute function public.profiles_freeze_privileged_columns();
