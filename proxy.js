@@ -1,23 +1,34 @@
 import { NextResponse } from 'next/server';
-import { updateSession } from './lib/supabase/middleware';
 
-const PROTECTED_PATHS = ['/account'];
+const ALLOWED_ORIGINS = ['https://simdulich.vn', 'http://localhost:5173'];
 
-export async function proxy(request) {
-  const { supabaseResponse, user } = await updateSession(request);
+function buildCorsHeaders(origin) {
+  return {
+    'Access-Control-Allow-Origin': origin,
+    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+  };
+}
 
-  const isProtected = PROTECTED_PATHS.some((path) =>
-    request.nextUrl.pathname.startsWith(path));
+export function proxy(request) {
+  const origin = request.headers.get('origin');
+  const isAllowed = ALLOWED_ORIGINS.includes(origin);
 
-  if (isProtected && !user) {
-    const url = request.nextUrl.clone();
-    url.pathname = '/login';
-    return NextResponse.redirect(url);
+  if (request.method === 'OPTIONS') {
+    return new NextResponse(null, {
+      status: 204,
+      headers: isAllowed ? buildCorsHeaders(origin) : {},
+    });
   }
 
-  return supabaseResponse;
+  const response = NextResponse.next();
+  if (isAllowed) {
+    const headers = buildCorsHeaders(origin);
+    Object.entries(headers).forEach(([key, value]) => response.headers.set(key, value));
+  }
+  return response;
 }
 
 export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)'],
+  matcher: '/api/:path*',
 };

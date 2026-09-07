@@ -1,64 +1,51 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { NextRequest, NextResponse } from 'next/server';
-
-const updateSessionMock = vi.fn();
-vi.mock('../lib/supabase/middleware', () => ({
-  updateSession: (...args) => updateSessionMock(...args),
-}));
-
+import { describe, it, expect } from 'vitest';
+import { NextRequest } from 'next/server';
 import { proxy } from '../proxy';
 
-describe('proxy', () => {
-  beforeEach(() => {
-    updateSessionMock.mockReset();
-  });
-
-  it('chuyển hướng /account về /login khi chưa đăng nhập', async () => {
-    const request = new NextRequest('http://localhost:3000/account');
-    updateSessionMock.mockResolvedValue({
-      supabaseResponse: NextResponse.next({ request }),
-      user: null,
+describe('proxy (CORS)', () => {
+  it('phản hồi preflight OPTIONS với header CORS khi origin được phép', () => {
+    const request = new NextRequest('http://localhost:3000/api/identity/auth/login', {
+      method: 'OPTIONS',
+      headers: { origin: 'http://localhost:5173' },
     });
 
-    const response = await proxy(request);
+    const response = proxy(request);
 
-    expect(response.status).toBe(307);
-    expect(new URL(response.headers.get('location')).pathname).toBe('/login');
+    expect(response.status).toBe(204);
+    expect(response.headers.get('Access-Control-Allow-Origin')).toBe('http://localhost:5173');
+    expect(response.headers.get('Access-Control-Allow-Methods')).toContain('POST');
   });
 
-  it('cho qua /account khi đã đăng nhập (trả về supabaseResponse, không redirect)', async () => {
-    const request = new NextRequest('http://localhost:3000/account');
-    const supabaseResponse = NextResponse.next({ request });
-    updateSessionMock.mockResolvedValue({
-      supabaseResponse,
-      user: { id: 'u1', email: 'a@simdulich.vn' },
+  it('phản hồi preflight OPTIONS không có header CORS khi origin không được phép', () => {
+    const request = new NextRequest('http://localhost:3000/api/identity/auth/login', {
+      method: 'OPTIONS',
+      headers: { origin: 'https://evil.example' },
     });
 
-    const response = await proxy(request);
+    const response = proxy(request);
 
-    expect(response).toBe(supabaseResponse);
-    expect(response.headers.get('location')).toBeNull();
+    expect(response.status).toBe(204);
+    expect(response.headers.get('Access-Control-Allow-Origin')).toBeNull();
   });
 
-  it('cho qua trang chủ "/" khi chưa đăng nhập (route công khai)', async () => {
-    const request = new NextRequest('http://localhost:3000/');
-    const supabaseResponse = NextResponse.next({ request });
-    updateSessionMock.mockResolvedValue({ supabaseResponse, user: null });
+  it('gắn header CORS vào request GET thường khi origin production được phép', () => {
+    const request = new NextRequest('http://localhost:3000/api/catalog/catalog/categories', {
+      method: 'GET',
+      headers: { origin: 'https://simdulich.vn' },
+    });
 
-    const response = await proxy(request);
+    const response = proxy(request);
 
-    expect(response).toBe(supabaseResponse);
-    expect(response.headers.get('location')).toBeNull();
+    expect(response.headers.get('Access-Control-Allow-Origin')).toBe('https://simdulich.vn');
   });
 
-  it('cho qua "/login" khi chưa đăng nhập (route công khai)', async () => {
-    const request = new NextRequest('http://localhost:3000/login');
-    const supabaseResponse = NextResponse.next({ request });
-    updateSessionMock.mockResolvedValue({ supabaseResponse, user: null });
+  it('không gắn header CORS khi không có origin (vd gọi trực tiếp server-to-server)', () => {
+    const request = new NextRequest('http://localhost:3000/api/catalog/catalog/categories', {
+      method: 'GET',
+    });
 
-    const response = await proxy(request);
+    const response = proxy(request);
 
-    expect(response).toBe(supabaseResponse);
-    expect(response.headers.get('location')).toBeNull();
+    expect(response.headers.get('Access-Control-Allow-Origin')).toBeNull();
   });
 });
