@@ -2,6 +2,15 @@ import { NextResponse } from 'next/server';
 import { authenticate, authErrorResponse, requireRole } from '../../../../../../lib/apiAuth';
 import { runProductImport } from '../../../../../../lib/productImport';
 
+// Treats both an absent field (formData.get returns null) and a submitted-but-blank
+// field (formData.get returns '' for an empty <input type="number">) as "not provided",
+// so downstream defaulting (e.g. markupPercent ?? 30) applies in both cases.
+function parseOptionalNumber(value) {
+  if (value == null || value === '') return null;
+  const n = Number(value);
+  return Number.isFinite(n) ? n : null;
+}
+
 export async function POST(request) {
   try {
     const { user, supabase } = await authenticate(request);
@@ -20,8 +29,8 @@ export async function POST(request) {
     const buffer = Buffer.from(await file.arrayBuffer());
     const summary = await runProductImport(supabase, buffer, {
       pricingMode,
-      markupPercent: markupPercent != null ? Number(markupPercent) : null,
-      fixedFee: fixedFee != null ? Number(fixedFee) : null,
+      markupPercent: parseOptionalNumber(markupPercent),
+      fixedFee: parseOptionalNumber(fixedFee),
     });
 
     return NextResponse.json(summary);

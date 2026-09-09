@@ -37,6 +37,38 @@ describe('POST /api/catalog/admin/products/import', () => {
     expect(runProductImportMock).toHaveBeenCalledWith({}, expect.any(Buffer), { pricingMode: 'manual', markupPercent: null, fixedFee: null });
   });
 
+  it('markupPercent gửi lên là chuỗi rỗng ("") -> coi như thiếu, không truyền 0 xuống runProductImport', async () => {
+    authenticateMock.mockResolvedValue({ user: { role: 'admin' }, supabase: {} });
+    runProductImportMock.mockResolvedValue({ totalRows: 1, created: 1, updated: 0, failed: 0, rows: [] });
+
+    const fakeFile = { arrayBuffer: () => Promise.resolve(new ArrayBuffer(8)) };
+    const formData = new Map([['file', fakeFile], ['pricingMode', 'markupPercent'], ['markupPercent', '']]);
+    const request = {
+      headers: { get: () => 'Bearer good-token' },
+      formData: () => Promise.resolve({ get: (key) => formData.get(key) }),
+    };
+
+    await POST(request);
+
+    expect(runProductImportMock).toHaveBeenCalledWith({}, expect.any(Buffer), { pricingMode: 'markupPercent', markupPercent: null, fixedFee: null });
+  });
+
+  it('fixedFee gửi lên là chuỗi rỗng ("") -> coi như thiếu, không truyền 0 xuống runProductImport', async () => {
+    authenticateMock.mockResolvedValue({ user: { role: 'admin' }, supabase: {} });
+    runProductImportMock.mockResolvedValue({ totalRows: 1, created: 1, updated: 0, failed: 0, rows: [] });
+
+    const fakeFile = { arrayBuffer: () => Promise.resolve(new ArrayBuffer(8)) };
+    const formData = new Map([['file', fakeFile], ['pricingMode', 'daysPlusFee'], ['fixedFee', '']]);
+    const request = {
+      headers: { get: () => 'Bearer good-token' },
+      formData: () => Promise.resolve({ get: (key) => formData.get(key) }),
+    };
+
+    await POST(request);
+
+    expect(runProductImportMock).toHaveBeenCalledWith({}, expect.any(Buffer), { pricingMode: 'daysPlusFee', markupPercent: null, fixedFee: null });
+  });
+
   it('trả 400 khi thiếu file', async () => {
     authenticateMock.mockResolvedValue({ user: { role: 'admin' }, supabase: {} });
 

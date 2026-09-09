@@ -43,6 +43,29 @@ describe('POST /api/catalog/admin/products/smart-import/commit', () => {
     expect(body.created).toBe(1);
   });
 
+  it('3 tham số pricing gửi lên là chuỗi rỗng ("") -> coi như thiếu, không truyền 0 xuống runSmartImport', async () => {
+    authenticateMock.mockResolvedValue({ user: { role: 'admin' }, supabase: {} });
+    runSmartImportMock.mockResolvedValue({ totalRows: 1, created: 1, updated: 0, failed: 0, rows: [] });
+
+    const fakeFile = { arrayBuffer: () => Promise.resolve(new ArrayBuffer(8)) };
+    const formData = new Map([
+      ['file', fakeFile],
+      ['esimMarkupPercent', ''],
+      ['physicalFixedFee', ''],
+      ['physicalNoDurationMultiplier', ''],
+    ]);
+    const request = {
+      headers: { get: () => 'Bearer good-token' },
+      formData: () => Promise.resolve({ get: (key) => formData.get(key) }),
+    };
+
+    await POST(request);
+
+    expect(runSmartImportMock).toHaveBeenCalledWith(
+      {}, expect.any(Buffer), { esimMarkupPercent: null, physicalFixedFee: null, physicalNoDurationMultiplier: null }, { commit: true },
+    );
+  });
+
   it('trả 500 với thông báo rõ ràng khi runSmartImport báo lỗi đọc dữ liệu hiện có (SmartImportLookupError), không ghi gì', async () => {
     authenticateMock.mockResolvedValue({ user: { role: 'admin' }, supabase: {} });
     runSmartImportMock.mockRejectedValue(new FakeSmartImportLookupError('boom'));

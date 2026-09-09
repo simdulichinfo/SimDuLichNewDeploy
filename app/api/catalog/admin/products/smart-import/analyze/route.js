@@ -2,6 +2,15 @@ import { NextResponse } from 'next/server';
 import { authenticate, authErrorResponse, requireRole } from '../../../../../../../lib/apiAuth';
 import { runSmartImport, SmartImportLookupError } from '../../../../../../../lib/smartImportRunner';
 
+// Treats both an absent field (formData.get returns null) and a submitted-but-blank
+// field (formData.get returns '' for an empty <input type="number">) as "not provided",
+// so downstream defaulting (e.g. esimMarkupPercent ?? 30) applies in both cases.
+function parseOptionalNumber(value) {
+  if (value == null || value === '') return null;
+  const n = Number(value);
+  return Number.isFinite(n) ? n : null;
+}
+
 export async function POST(request) {
   try {
     const { user, supabase } = await authenticate(request);
@@ -19,9 +28,9 @@ export async function POST(request) {
 
     const buffer = Buffer.from(await file.arrayBuffer());
     const preview = await runSmartImport(supabase, buffer, {
-      esimMarkupPercent: esimMarkupPercent != null ? Number(esimMarkupPercent) : null,
-      physicalFixedFee: physicalFixedFee != null ? Number(physicalFixedFee) : null,
-      physicalNoDurationMultiplier: physicalNoDurationMultiplier != null ? Number(physicalNoDurationMultiplier) : null,
+      esimMarkupPercent: parseOptionalNumber(esimMarkupPercent),
+      physicalFixedFee: parseOptionalNumber(physicalFixedFee),
+      physicalNoDurationMultiplier: parseOptionalNumber(physicalNoDurationMultiplier),
     }, { commit: false });
 
     return NextResponse.json(preview);
