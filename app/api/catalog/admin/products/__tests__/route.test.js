@@ -125,4 +125,60 @@ describe('POST /api/catalog/admin/products', () => {
     expect(body).toEqual({ message: 'Thiếu thông tin bắt buộc.' });
     expect(createProductAdminMock).not.toHaveBeenCalled();
   });
+
+  it('trả 400 khi priceBuy âm', async () => {
+    authenticateMock.mockResolvedValue({ user: { role: 'admin' }, supabase: {} });
+
+    const response = await POST(makePostRequest({
+      categoryId: 1, title: 'A', slug: 'a', simType: 'esim', priceBuy: -5000, priceImport: 1,
+      dataInfo: '1GB', durationDays: 1, status: 'active',
+    }));
+    const body = await response.json();
+
+    expect(response.status).toBe(400);
+    expect(body).toEqual({ message: 'Thiếu thông tin bắt buộc.' });
+    expect(createProductAdminMock).not.toHaveBeenCalled();
+  });
+
+  it('trả 400 khi priceBuy không phải số (chuỗi)', async () => {
+    authenticateMock.mockResolvedValue({ user: { role: 'admin' }, supabase: {} });
+
+    const response = await POST(makePostRequest({
+      categoryId: 1, title: 'A', slug: 'a', simType: 'esim', priceBuy: 'abc', priceImport: 1,
+      dataInfo: '1GB', durationDays: 1, status: 'active',
+    }));
+    const body = await response.json();
+
+    expect(response.status).toBe(400);
+    expect(body).toEqual({ message: 'Thiếu thông tin bắt buộc.' });
+    expect(createProductAdminMock).not.toHaveBeenCalled();
+  });
+
+  it('trả 400 khi priceImport âm', async () => {
+    authenticateMock.mockResolvedValue({ user: { role: 'admin' }, supabase: {} });
+
+    const response = await POST(makePostRequest({
+      categoryId: 1, title: 'A', slug: 'a', simType: 'esim', priceBuy: 1, priceImport: -5000,
+      dataInfo: '1GB', durationDays: 1, status: 'active',
+    }));
+    const body = await response.json();
+
+    expect(response.status).toBe(400);
+    expect(body).toEqual({ message: 'Thiếu thông tin bắt buộc.' });
+    expect(createProductAdminMock).not.toHaveBeenCalled();
+  });
+
+  it('trả 400 khi priceImport không phải số (chuỗi)', async () => {
+    authenticateMock.mockResolvedValue({ user: { role: 'admin' }, supabase: {} });
+
+    const response = await POST(makePostRequest({
+      categoryId: 1, title: 'A', slug: 'a', simType: 'esim', priceBuy: 1, priceImport: 'abc',
+      dataInfo: '1GB', durationDays: 1, status: 'active',
+    }));
+    const body = await response.json();
+
+    expect(response.status).toBe(400);
+    expect(body).toEqual({ message: 'Thiếu thông tin bắt buộc.' });
+    expect(createProductAdminMock).not.toHaveBeenCalled();
+  });
 });

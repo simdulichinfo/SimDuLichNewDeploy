@@ -4,7 +4,12 @@ import { listProductsAdmin, createProductAdmin } from '../../../../../lib/adminC
 
 function validateProductBody(body) {
   const { categoryId, title, slug, simType, priceBuy, priceImport, dataInfo, durationDays, status } = body;
-  if (!categoryId || !title || !slug || !priceBuy || !priceImport || !dataInfo || !status) {
+  if (!categoryId || !title || !slug || !dataInfo || !status) {
+    return 'Thiếu thông tin bắt buộc.';
+  }
+  // priceBuy/priceImport must be finite positive numbers — a plain falsy check would
+  // reject 0 but incorrectly accept a negative number or a non-numeric string.
+  if (!Number.isFinite(priceBuy) || priceBuy <= 0 || !Number.isFinite(priceImport) || priceImport <= 0) {
     return 'Thiếu thông tin bắt buộc.';
   }
   // durationDays may be explicitly null (Smart Import's "no duration specified" for physical
