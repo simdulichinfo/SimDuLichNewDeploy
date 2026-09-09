@@ -52,6 +52,9 @@ export async function DELETE(request, { params }) {
 
     const { deleted, error } = await deleteProductAdmin(supabase, id);
     if (error) {
+      if (error.code === '23503') {
+        return NextResponse.json({ message: 'Không thể xoá — sản phẩm còn ICCID trong kho.' }, { status: 400 });
+      }
       return NextResponse.json({ message: 'Không xoá được sản phẩm.' }, { status: 500 });
     }
     if (!deleted) {

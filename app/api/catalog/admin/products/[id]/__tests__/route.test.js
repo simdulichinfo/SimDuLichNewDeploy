@@ -67,4 +67,26 @@ describe('DELETE /api/catalog/admin/products/[id]', () => {
 
     expect(response.status).toBe(204);
   });
+
+  it('trả 404 khi không tìm thấy id', async () => {
+    authenticateMock.mockResolvedValue({ user: { role: 'admin' }, supabase: {} });
+    deleteProductAdminMock.mockResolvedValue({ deleted: false, error: null });
+
+    const response = await DELETE(makeDeleteRequest(), { params: Promise.resolve({ id: '999' }) });
+    const body = await response.json();
+
+    expect(response.status).toBe(404);
+    expect(body).toEqual({ message: 'Không tìm thấy sản phẩm.' });
+  });
+
+  it('trả 400 khi bị chặn bởi khoá ngoại (inventory FK)', async () => {
+    authenticateMock.mockResolvedValue({ user: { role: 'admin' }, supabase: {} });
+    deleteProductAdminMock.mockResolvedValue({ deleted: false, error: { code: '23503' } });
+
+    const response = await DELETE(makeDeleteRequest(), { params: Promise.resolve({ id: '1' }) });
+    const body = await response.json();
+
+    expect(response.status).toBe(400);
+    expect(body).toEqual({ message: 'Không thể xoá — sản phẩm còn ICCID trong kho.' });
+  });
 });
