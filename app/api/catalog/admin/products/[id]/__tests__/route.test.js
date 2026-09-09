@@ -51,6 +51,47 @@ describe('PUT /api/catalog/admin/products/[id]', () => {
 
     expect(response.status).toBe(404);
   });
+
+  it('chấp nhận durationDays: null (re-save sản phẩm Smart Import không có thời hạn) và gọi tới lib', async () => {
+    authenticateMock.mockResolvedValue({ user: { role: 'admin' }, supabase: {} });
+    updateProductAdminMock.mockResolvedValue({ data: { id: 1, slug: 'a' }, error: null });
+
+    const response = await PUT(makePutRequest({
+      categoryId: 1, title: 'A', slug: 'a', simType: 'physical', priceBuy: 1, priceImport: 1,
+      dataInfo: '1GB', durationDays: null, status: 'active',
+    }), { params: Promise.resolve({ id: '1' }) });
+
+    expect(response.status).toBe(200);
+    expect(updateProductAdminMock).toHaveBeenCalled();
+  });
+
+  it('trả 400 khi durationDays = 0', async () => {
+    authenticateMock.mockResolvedValue({ user: { role: 'admin' }, supabase: {} });
+
+    const response = await PUT(makePutRequest({
+      categoryId: 1, title: 'A', slug: 'a', simType: 'esim', priceBuy: 1, priceImport: 1,
+      dataInfo: '1GB', durationDays: 0, status: 'active',
+    }), { params: Promise.resolve({ id: '1' }) });
+    const body = await response.json();
+
+    expect(response.status).toBe(400);
+    expect(body).toEqual({ message: 'Thiếu thông tin bắt buộc.' });
+    expect(updateProductAdminMock).not.toHaveBeenCalled();
+  });
+
+  it('trả 400 khi durationDays bị thiếu (undefined)', async () => {
+    authenticateMock.mockResolvedValue({ user: { role: 'admin' }, supabase: {} });
+
+    const response = await PUT(makePutRequest({
+      categoryId: 1, title: 'A', slug: 'a', simType: 'esim', priceBuy: 1, priceImport: 1,
+      dataInfo: '1GB', status: 'active',
+    }), { params: Promise.resolve({ id: '1' }) });
+    const body = await response.json();
+
+    expect(response.status).toBe(400);
+    expect(body).toEqual({ message: 'Thiếu thông tin bắt buộc.' });
+    expect(updateProductAdminMock).not.toHaveBeenCalled();
+  });
 });
 
 describe('DELETE /api/catalog/admin/products/[id]', () => {

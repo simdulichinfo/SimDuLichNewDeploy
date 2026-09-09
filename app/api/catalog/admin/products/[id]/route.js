@@ -4,7 +4,12 @@ import { updateProductAdmin, deleteProductAdmin } from '../../../../../../lib/ad
 
 function validateProductBody(body) {
   const { categoryId, title, slug, simType, priceBuy, priceImport, dataInfo, durationDays, status } = body;
-  if (!categoryId || !title || !slug || !priceBuy || !priceImport || !dataInfo || !durationDays || !status) {
+  if (!categoryId || !title || !slug || !priceBuy || !priceImport || !dataInfo || !status) {
+    return 'Thiếu thông tin bắt buộc.';
+  }
+  // durationDays may be explicitly null (Smart Import's "no duration specified" for physical
+  // SIMs, per migration 0006). Only undefined/missing, 0, and negative values are invalid.
+  if (durationDays === undefined || (durationDays !== null && durationDays <= 0)) {
     return 'Thiếu thông tin bắt buộc.';
   }
   if (simType !== 'esim' && simType !== 'physical') {
