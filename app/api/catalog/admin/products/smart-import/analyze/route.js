@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { authenticate, authErrorResponse, requireRole } from '../../../../../../../lib/apiAuth';
-import { runSmartImport } from '../../../../../../../lib/smartImportRunner';
+import { runSmartImport, SmartImportLookupError } from '../../../../../../../lib/smartImportRunner';
 
 export async function POST(request) {
   try {
@@ -26,6 +26,9 @@ export async function POST(request) {
 
     return NextResponse.json(preview);
   } catch (error) {
+    if (error instanceof SmartImportLookupError) {
+      return NextResponse.json({ message: 'Không đọc được dữ liệu hiện có, vui lòng thử lại.' }, { status: 500 });
+    }
     return authErrorResponse(error);
   }
 }
