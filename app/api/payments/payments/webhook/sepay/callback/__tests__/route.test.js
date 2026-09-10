@@ -57,4 +57,15 @@ describe('POST /api/payments/payments/webhook/sepay/callback', () => {
 
     expect(response.status).toBe(500);
   });
+
+  it('vẫn trả 200 {received:true} khi processSepayWebhook throw lỗi bất ngờ', async () => {
+    createServiceClientMock.mockReturnValue({});
+    processSepayWebhookMock.mockRejectedValue(new Error('supabase network error'));
+
+    const response = await POST(makeRequest({ transferType: 'in', content: 'SDL2345ABCD', transferAmount: 1, id: 1 }, 'Apikey real-key'));
+    const body = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(body).toEqual({ received: true });
+  });
 });

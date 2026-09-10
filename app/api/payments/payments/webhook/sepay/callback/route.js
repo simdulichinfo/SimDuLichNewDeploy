@@ -14,7 +14,11 @@ export async function POST(request) {
     return NextResponse.json({ message: 'Máy chủ chưa cấu hình Supabase.' }, { status: 500 });
   }
 
-  const payload = await request.json();
-  await processSepayWebhook(serviceClient, payload);
+  try {
+    const payload = await request.json();
+    await processSepayWebhook(serviceClient, payload);
+  } catch (error) {
+    console.error('[sepayWebhook] unexpected error processing webhook', error);
+  }
   return NextResponse.json({ received: true });
 }
