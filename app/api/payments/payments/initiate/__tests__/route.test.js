@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { OrderError } from '../../../../../../lib/orders';
 
 const createApiClientMock = vi.fn();
 const initiatePaymentMock = vi.fn();
@@ -41,5 +42,16 @@ describe('POST /api/payments/payments/initiate', () => {
 
     expect(response.status).toBe(404);
     expect(body).toEqual({ message: 'Không tìm thấy đơn hàng.' });
+  });
+
+  it('trả đúng status/message khi initiatePayment ném OrderError (VD: getOrderByCode RPC lỗi)', async () => {
+    createApiClientMock.mockReturnValue({});
+    initiatePaymentMock.mockRejectedValue(new OrderError('Không tra được đơn hàng.', 500));
+
+    const response = await POST(makeRequest({ orderCode: 'SDL2345ABCD', provider: 'sepay' }));
+    const body = await response.json();
+
+    expect(response.status).toBe(500);
+    expect(body).toEqual({ message: 'Không tra được đơn hàng.' });
   });
 });
