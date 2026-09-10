@@ -51,6 +51,21 @@ describe('POST /api/orders/orders', () => {
     expect(createOrderMock).not.toHaveBeenCalled();
   });
 
+  it('trả 400 khi paymentMethod không nằm trong danh sách cho phép', async () => {
+    optionalAuthenticateMock.mockResolvedValue({ user: null, supabase: {} });
+
+    const response = await POST(makeRequest({
+      custName: 'A', custEmail: 'a@x.vn', custPhone: '0900000000',
+      paymentMethod: 'bitcoin', shippingMethod: 'email', shippingAddress: null,
+      items: [{ productId: 1, quantity: 1 }],
+    }));
+    const body = await response.json();
+
+    expect(response.status).toBe(400);
+    expect(body).toEqual({ message: 'Phương thức thanh toán không hợp lệ.' });
+    expect(createOrderMock).not.toHaveBeenCalled();
+  });
+
   it('trả đúng status/message khi createOrder ném OrderError', async () => {
     optionalAuthenticateMock.mockResolvedValue({ user: null, supabase: {} });
     const { OrderError } = await vi.importActual('../../../../../lib/orders');
