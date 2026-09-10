@@ -91,4 +91,25 @@ describe('POST /api/identity/auth/login', () => {
     expect(response.status).toBe(400);
     expect(body).toEqual({ message: 'Dữ liệu gửi lên không hợp lệ.' });
   });
+
+  it('trả 403 khi tài khoản bị khoá', async () => {
+    signInMock.mockResolvedValue({
+      data: {
+        user: { id: 'u1' },
+        session: { access_token: 'access-1', refresh_token: 'refresh-1' },
+      },
+      error: null,
+    });
+    fromMock.mockReturnValue(createQueryBuilderMock({
+      data: { id: 'u1', name: 'A', phone: '0900000000', email: 'a@simdulich.vn', role: 'customer', status: 'banned' },
+      error: null,
+    }));
+
+    const response = await POST(makeRequest({ email: 'a@simdulich.vn', password: 'secret123' }));
+    const body = await response.json();
+
+    expect(response.status).toBe(403);
+    expect(body).toEqual({ message: 'Tài khoản của bạn đã bị khoá.' });
+    expect(body.accessToken).toBeUndefined();
+  });
 });

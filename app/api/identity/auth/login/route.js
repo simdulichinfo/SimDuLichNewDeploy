@@ -35,6 +35,10 @@ export async function POST(request) {
     return NextResponse.json({ message: 'Không tìm thấy hồ sơ người dùng.' }, { status: 500 });
   }
 
+  if (profile.status === 'banned') {
+    return NextResponse.json({ message: 'Tài khoản của bạn đã bị khoá.' }, { status: 403 });
+  }
+
   return NextResponse.json({
     accessToken: data.session.access_token,
     refreshToken: data.session.refresh_token,
