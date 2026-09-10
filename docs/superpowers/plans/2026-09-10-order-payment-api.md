@@ -2513,9 +2513,15 @@ git commit -m "feat: add admin payment/log listing and manual payment confirmati
 - Consumes: the running `simDulichNew` dev server and `Simdulich`'s checkout/payment/admin pages.
 - Produces: nothing.
 
-- [ ] **Step 1: Apply the new migration to the real Supabase project**
+- [ ] **Step 1: Apply the new migrations to the real Supabase project**
 
-In the Supabase Dashboard SQL Editor, run `supabase/migrations/0007_orders_payments.sql`.
+In the Supabase Dashboard SQL Editor, run `supabase/migrations/0007_orders_payments.sql`, then run
+`supabase/migrations/0008_create_order_rpc.sql` (added during final review to fix a Critical bug —
+`orders`/`order_items` grant INSERT-only to anon/authenticated, so `createOrder`'s
+`.insert().select()` cannot work without this RPC; see `lib/orders.js`'s `createOrder`, which calls
+`create_order` via `supabase.rpc(...)`). If `POST /api/orders/orders` 404s on the RPC after applying
+0008, PostgREST's schema cache may need a nudge — run `notify pgrst, 'reload schema';` in the SQL
+Editor and retry.
 
 - [ ] **Step 2: Set the new environment variables**
 
