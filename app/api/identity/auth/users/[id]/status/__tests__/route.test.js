@@ -26,14 +26,15 @@ describe('POST /api/identity/auth/users/[id]/status', () => {
 
   it('lật trạng thái thành công, trả 200 với user đã cập nhật', async () => {
     authenticateMock.mockResolvedValue({ user: { id: 'admin1', role: 'admin' }, supabase: {} });
-    toggleUserStatusMock.mockResolvedValue({ id: 'u2', name: 'A', email: 'a@x.vn', phone: '0900000000', role: 'customer', status: 'banned' });
+    const updatedUser = { id: 'u2', name: 'A', email: 'a@x.vn', phone: '0900000000', role: 'customer', status: 'banned' };
+    toggleUserStatusMock.mockResolvedValue(updatedUser);
 
     const response = await POST(makeRequest(), { params: Promise.resolve({ id: 'u2' }) });
     const body = await response.json();
 
     expect(toggleUserStatusMock).toHaveBeenCalledWith({}, { targetId: 'u2', actingUserId: 'admin1' });
     expect(response.status).toBe(200);
-    expect(body.status).toBe('banned');
+    expect(body).toEqual(updatedUser);
   });
 
   it('trả 404 khi không tìm thấy user', async () => {

@@ -79,6 +79,27 @@ describe('POST /api/identity/auth/refresh', () => {
     expect(body).toEqual({ message: 'Không tìm thấy hồ sơ người dùng.' });
   });
 
+  it('trả 403 khi tài khoản bị khoá, không trả accessToken', async () => {
+    refreshSessionMock.mockResolvedValue({
+      data: {
+        user: { id: 'u1' },
+        session: { access_token: 'access-2', refresh_token: 'refresh-2' },
+      },
+      error: null,
+    });
+    fromMock.mockReturnValue(createQueryBuilderMock({
+      data: { id: 'u1', name: 'A', phone: '0900000000', email: 'a@simdulich.vn', role: 'customer', status: 'banned' },
+      error: null,
+    }));
+
+    const response = await POST(makeRequest({ refreshToken: 'refresh-1' }));
+    const body = await response.json();
+
+    expect(response.status).toBe(403);
+    expect(body).toEqual({ message: 'Tài khoản của bạn đã bị khoá.' });
+    expect(body.accessToken).toBeUndefined();
+  });
+
   it('trả 400 khi body không phải JSON hợp lệ', async () => {
     const badRequest = { json: () => Promise.reject(new SyntaxError('Unexpected token')) };
 
