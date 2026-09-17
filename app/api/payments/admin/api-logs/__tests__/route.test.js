@@ -24,11 +24,22 @@ describe('GET /api/payments/admin/api-logs', () => {
   });
 
   it('đọc orderId từ query string', async () => {
-    authenticateMock.mockResolvedValue({ user: { role: 'staff' }, supabase: {} });
+    authenticateMock.mockResolvedValue({ user: { role: 'admin' }, supabase: {} });
     listApiLogsAdminMock.mockResolvedValue({ data: { content: [], number: 0, size: 20, totalElements: 0, totalPages: 0 }, error: null });
 
     await GET(makeRequest('http://localhost:3000/api/payments/admin/api-logs?orderId=5'));
 
     expect(listApiLogsAdminMock).toHaveBeenCalledWith({}, { page: undefined, size: undefined, orderId: '5' });
+  });
+
+  it('trả 403 khi caller là staff (chỉ admin mới xem được api logs)', async () => {
+    authenticateMock.mockResolvedValue({ user: { role: 'staff' }, supabase: {} });
+
+    const response = await GET(makeRequest('http://localhost:3000/api/payments/admin/api-logs'));
+    const body = await response.json();
+
+    expect(response.status).toBe(403);
+    expect(body).toEqual({ message: 'Không đủ quyền truy cập.' });
+    expect(listApiLogsAdminMock).not.toHaveBeenCalled();
   });
 });

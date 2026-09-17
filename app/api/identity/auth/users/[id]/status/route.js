@@ -5,7 +5,7 @@ import { toggleUserStatus, AdminUsersError } from '../../../../../../../lib/admi
 export async function POST(request, { params }) {
   try {
     const { user, supabase } = await authenticate(request);
-    requireRole(user, ['admin', 'staff']);
+    requireRole(user, ['admin']);
     const { id } = await params;
 
     const updated = await toggleUserStatus(supabase, { targetId: id, actingUserId: user.id });

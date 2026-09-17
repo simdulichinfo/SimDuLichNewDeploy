@@ -5,7 +5,7 @@ import { confirmPaymentAdmin } from '../../../../../../lib/adminPayments';
 export async function POST(request) {
   try {
     const { user, supabase } = await authenticate(request);
-    requireRole(user, ['admin', 'staff']);
+    requireRole(user, ['admin']);
 
     const { orderCode } = await request.json();
     const { data, error } = await confirmPaymentAdmin(supabase, orderCode);

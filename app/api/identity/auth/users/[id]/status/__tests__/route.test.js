@@ -58,8 +58,17 @@ describe('POST /api/identity/auth/users/[id]/status', () => {
     expect(body).toEqual({ message: 'Không thể tự khoá tài khoản của chính mình.' });
   });
 
-  it('trả 403 khi caller không phải admin/staff, không gọi toggleUserStatus', async () => {
+  it('trả 403 khi caller là customer', async () => {
     authenticateMock.mockResolvedValue({ user: { id: 'u3', role: 'customer' }, supabase: {} });
+
+    const response = await POST(makeRequest(), { params: Promise.resolve({ id: 'u2' }) });
+
+    expect(response.status).toBe(403);
+    expect(toggleUserStatusMock).not.toHaveBeenCalled();
+  });
+
+  it('trả 403 khi caller là staff (chỉ admin mới khoá/mở khoá tài khoản)', async () => {
+    authenticateMock.mockResolvedValue({ user: { id: 'staff1', role: 'staff' }, supabase: {} });
 
     const response = await POST(makeRequest(), { params: Promise.resolve({ id: 'u2' }) });
 

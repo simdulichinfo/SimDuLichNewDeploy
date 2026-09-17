@@ -5,7 +5,7 @@ import { listApiLogsAdmin } from '../../../../../lib/adminPayments';
 export async function GET(request) {
   try {
     const { user, supabase } = await authenticate(request);
-    requireRole(user, ['admin', 'staff']);
+    requireRole(user, ['admin']);
 
     const { searchParams } = new URL(request.url);
     const { data, error } = await listApiLogsAdmin(supabase, {

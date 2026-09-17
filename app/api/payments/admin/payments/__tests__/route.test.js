@@ -31,4 +31,15 @@ describe('GET /api/payments/admin/payments', () => {
 
     expect(listPaymentsAdminMock).toHaveBeenCalledWith({}, { page: 0, size: 20, orderId: '5' });
   });
+
+  it('trả 403 khi caller là staff (chỉ admin mới xem giao dịch thanh toán)', async () => {
+    authenticateMock.mockResolvedValue({ user: { role: 'staff' }, supabase: {} });
+
+    const response = await GET(makeRequest('http://localhost:3000/api/payments/admin/payments'));
+    const body = await response.json();
+
+    expect(response.status).toBe(403);
+    expect(body).toEqual({ message: 'Không đủ quyền truy cập.' });
+    expect(listPaymentsAdminMock).not.toHaveBeenCalled();
+  });
 });
