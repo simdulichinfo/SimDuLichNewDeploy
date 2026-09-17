@@ -71,25 +71,33 @@ $$;
 -- ── Cho xem, chặn sửa: Gói cước, Danh mục quốc gia, Kho SIM vật lý ──────────
 
 drop policy if exists "Admins can manage categories" on public.categories;
+drop policy if exists "Staff can view categories" on public.categories;
 create policy "Staff can view categories" on public.categories
   for select using (public.is_admin_or_staff());
+drop policy if exists "Admins can modify categories" on public.categories;
 create policy "Admins can modify categories" on public.categories
   for all using (public.is_admin()) with check (public.is_admin());
 
 drop policy if exists "Admins can manage products" on public.products;
+drop policy if exists "Staff can view products" on public.products;
 create policy "Staff can view products" on public.products
   for select using (public.is_admin_or_staff());
+drop policy if exists "Admins can modify products" on public.products;
 create policy "Admins can modify products" on public.products
   for all using (public.is_admin()) with check (public.is_admin());
 
 drop policy if exists "Admins can manage category_countries" on public.category_countries;
+drop policy if exists "Staff can view category_countries" on public.category_countries;
 create policy "Staff can view category_countries" on public.category_countries
   for select using (public.is_admin_or_staff());
+drop policy if exists "Admins can modify category_countries" on public.category_countries;
 create policy "Admins can modify category_countries" on public.category_countries
   for all using (public.is_admin()) with check (public.is_admin());
 
 drop policy if exists "Admins can manage inventory" on public.physical_sim_inventory;
+drop policy if exists "Staff can view inventory" on public.physical_sim_inventory;
 create policy "Staff can view inventory" on public.physical_sim_inventory
   for select using (public.is_admin_or_staff());
+drop policy if exists "Admins can modify inventory" on public.physical_sim_inventory;
 create policy "Admins can modify inventory" on public.physical_sim_inventory
   for all using (public.is_admin()) with check (public.is_admin());
