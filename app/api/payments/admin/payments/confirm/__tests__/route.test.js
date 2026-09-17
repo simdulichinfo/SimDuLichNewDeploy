@@ -50,4 +50,13 @@ describe('POST /api/payments/admin/payments/confirm', () => {
     expect(response.status).toBe(403);
     expect(confirmPaymentAdminMock).not.toHaveBeenCalled();
   });
+
+  it('trả 403 khi caller là staff (chỉ admin mới xác nhận thanh toán thủ công)', async () => {
+    authenticateMock.mockResolvedValue({ user: { role: 'staff' }, supabase: {} });
+
+    const response = await POST(makeRequest({ orderCode: 'SDL2345ABCD' }));
+
+    expect(response.status).toBe(403);
+    expect(confirmPaymentAdminMock).not.toHaveBeenCalled();
+  });
 });

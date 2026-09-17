@@ -148,6 +148,18 @@ describe('PUT /api/catalog/admin/products/[id]', () => {
     expect(body).toEqual({ message: 'Thiếu thông tin bắt buộc.' });
     expect(updateProductAdminMock).not.toHaveBeenCalled();
   });
+
+  it('trả 403 khi caller là staff (chỉ admin mới sửa gói cước)', async () => {
+    authenticateMock.mockResolvedValue({ user: { role: 'staff' }, supabase: {} });
+
+    const response = await PUT(makePutRequest({
+      categoryId: 1, title: 'A', slug: 'a', simType: 'esim', priceBuy: 1, priceImport: 1,
+      dataInfo: '1GB', durationDays: 1, status: 'active',
+    }), { params: Promise.resolve({ id: '1' }) });
+
+    expect(response.status).toBe(403);
+    expect(updateProductAdminMock).not.toHaveBeenCalled();
+  });
 });
 
 describe('DELETE /api/catalog/admin/products/[id]', () => {
@@ -185,5 +197,14 @@ describe('DELETE /api/catalog/admin/products/[id]', () => {
 
     expect(response.status).toBe(400);
     expect(body).toEqual({ message: 'Không thể xoá — sản phẩm còn ICCID trong kho.' });
+  });
+
+  it('trả 403 khi caller là staff (chỉ admin mới xoá gói cước)', async () => {
+    authenticateMock.mockResolvedValue({ user: { role: 'staff' }, supabase: {} });
+
+    const response = await DELETE(makeDeleteRequest(), { params: Promise.resolve({ id: '1' }) });
+
+    expect(response.status).toBe(403);
+    expect(deleteProductAdminMock).not.toHaveBeenCalled();
   });
 });

@@ -84,4 +84,14 @@ describe('GET /api/identity/auth/users', () => {
     expect(response.status).toBe(500);
     expect(body).toEqual({ message: 'Không tải được danh sách người dùng.' });
   });
+
+  it('trả 403 khi caller là staff (chỉ admin mới xem danh sách người dùng)', async () => {
+    authenticateMock.mockResolvedValue({ user: { role: 'staff' }, supabase: {} });
+
+    const response = await GET(makeRequest('http://localhost:3000/api/identity/auth/users'));
+    const body = await response.json();
+
+    expect(response.status).toBe(403);
+    expect(body).toEqual({ message: 'Không đủ quyền truy cập.' });
+  });
 });

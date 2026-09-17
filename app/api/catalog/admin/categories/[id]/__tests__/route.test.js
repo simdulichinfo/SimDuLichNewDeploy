@@ -52,6 +52,15 @@ describe('PUT /api/catalog/admin/categories/[id]', () => {
     expect(response.status).toBe(404);
     expect(body).toEqual({ message: 'Không tìm thấy danh mục.' });
   });
+
+  it('trả 403 khi caller là staff (chỉ admin mới sửa danh mục)', async () => {
+    authenticateMock.mockResolvedValue({ user: { role: 'staff' }, supabase: {} });
+
+    const response = await PUT(makePutRequest({ name: 'X', slug: 'x', status: 'active' }), { params: Promise.resolve({ id: '5' }) });
+
+    expect(response.status).toBe(403);
+    expect(updateCategoryAdminMock).not.toHaveBeenCalled();
+  });
 });
 
 describe('DELETE /api/catalog/admin/categories/[id]', () => {
@@ -87,5 +96,14 @@ describe('DELETE /api/catalog/admin/categories/[id]', () => {
 
     expect(response.status).toBe(400);
     expect(body).toEqual({ message: 'Không thể xoá — danh mục còn sản phẩm liên kết.' });
+  });
+
+  it('trả 403 khi caller là staff (chỉ admin mới xoá danh mục)', async () => {
+    authenticateMock.mockResolvedValue({ user: { role: 'staff' }, supabase: {} });
+
+    const response = await DELETE(makeDeleteRequest(), { params: Promise.resolve({ id: '5' }) });
+
+    expect(response.status).toBe(403);
+    expect(deleteCategoryAdminMock).not.toHaveBeenCalled();
   });
 });

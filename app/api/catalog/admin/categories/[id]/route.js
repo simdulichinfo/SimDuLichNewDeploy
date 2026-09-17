@@ -5,7 +5,7 @@ import { updateCategoryAdmin, deleteCategoryAdmin } from '../../../../../../lib/
 export async function PUT(request, { params }) {
   try {
     const { user, supabase } = await authenticate(request);
-    requireRole(user, ['admin', 'staff']);
+    requireRole(user, ['admin']);
     const { id } = await params;
 
     const { name, slug, imageUrl, status } = await request.json();
@@ -32,7 +32,7 @@ export async function PUT(request, { params }) {
 export async function DELETE(request, { params }) {
   try {
     const { user, supabase } = await authenticate(request);
-    requireRole(user, ['admin', 'staff']);
+    requireRole(user, ['admin']);
     const { id } = await params;
 
     const { deleted, error } = await deleteCategoryAdmin(supabase, id);

@@ -41,7 +41,7 @@ export async function GET(request) {
 export async function POST(request) {
   try {
     const { user, supabase } = await authenticate(request);
-    requireRole(user, ['admin', 'staff']);
+    requireRole(user, ['admin']);
 
     const body = await request.json();
     const validationError = validateProductBody(body);
