@@ -5,7 +5,7 @@ import { updateInventoryStatusAdmin } from '../../../../../../../lib/adminCatalo
 export async function PUT(request, { params }) {
   try {
     const { user, supabase } = await authenticate(request);
-    requireRole(user, ['admin', 'staff']);
+    requireRole(user, ['admin']);
     const { id } = await params;
 
     const { status } = await request.json();

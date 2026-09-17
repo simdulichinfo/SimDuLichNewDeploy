@@ -54,4 +54,13 @@ describe('POST /api/catalog/admin/inventory/import', () => {
     expect(response.status).toBe(400);
     expect(body).toEqual({ message: 'productId không tồn tại.' });
   });
+
+  it('trả 403 khi caller là staff (chỉ admin mới nhập kho)', async () => {
+    authenticateMock.mockResolvedValue({ user: { role: 'staff' }, supabase: {} });
+
+    const response = await POST(makeRequest({ productId: 10, iccids: ['x'] }));
+
+    expect(response.status).toBe(403);
+    expect(importInventoryAdminMock).not.toHaveBeenCalled();
+  });
 });

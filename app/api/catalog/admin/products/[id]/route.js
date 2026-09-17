@@ -26,7 +26,7 @@ function validateProductBody(body) {
 export async function PUT(request, { params }) {
   try {
     const { user, supabase } = await authenticate(request);
-    requireRole(user, ['admin', 'staff']);
+    requireRole(user, ['admin']);
     const { id } = await params;
 
     const body = await request.json();
@@ -57,7 +57,7 @@ export async function PUT(request, { params }) {
 export async function DELETE(request, { params }) {
   try {
     const { user, supabase } = await authenticate(request);
-    requireRole(user, ['admin', 'staff']);
+    requireRole(user, ['admin']);
     const { id } = await params;
 
     const { deleted, error } = await deleteProductAdmin(supabase, id);

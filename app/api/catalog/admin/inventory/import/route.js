@@ -5,7 +5,7 @@ import { importInventoryAdmin } from '../../../../../../lib/adminCatalog';
 export async function POST(request) {
   try {
     const { user, supabase } = await authenticate(request);
-    requireRole(user, ['admin', 'staff']);
+    requireRole(user, ['admin']);
 
     const { productId, iccids } = await request.json();
     if (!Array.isArray(iccids) || iccids.length === 0) {

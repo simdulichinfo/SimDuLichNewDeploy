@@ -14,7 +14,7 @@ function parseOptionalNumber(value) {
 export async function POST(request) {
   try {
     const { user, supabase } = await authenticate(request);
-    requireRole(user, ['admin', 'staff']);
+    requireRole(user, ['admin']);
 
     const formData = await request.formData();
     const file = formData.get('file');

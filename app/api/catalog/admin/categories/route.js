@@ -20,7 +20,7 @@ export async function GET(request) {
 export async function POST(request) {
   try {
     const { user, supabase } = await authenticate(request);
-    requireRole(user, ['admin', 'staff']);
+    requireRole(user, ['admin']);
 
     const { name, slug, imageUrl, status } = await request.json();
     if (!name || !slug || !status) {

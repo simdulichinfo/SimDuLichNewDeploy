@@ -181,4 +181,16 @@ describe('POST /api/catalog/admin/products', () => {
     expect(body).toEqual({ message: 'Thiếu thông tin bắt buộc.' });
     expect(createProductAdminMock).not.toHaveBeenCalled();
   });
+
+  it('trả 403 khi caller là staff (chỉ admin mới tạo gói cước)', async () => {
+    authenticateMock.mockResolvedValue({ user: { role: 'staff' }, supabase: {} });
+
+    const response = await POST(makePostRequest({
+      categoryId: 1, title: 'A', slug: 'a', simType: 'esim', priceBuy: 1, priceImport: 1,
+      dataInfo: '1GB', durationDays: 1, status: 'active',
+    }));
+
+    expect(response.status).toBe(403);
+    expect(createProductAdminMock).not.toHaveBeenCalled();
+  });
 });

@@ -83,4 +83,20 @@ describe('POST /api/catalog/admin/products/smart-import/commit', () => {
     expect(response.status).toBe(500);
     expect(body.message).toBe('Không đọc được dữ liệu hiện có, vui lòng thử lại.');
   });
+
+  it('trả 403 khi caller là staff (chỉ admin mới ghi bảng giá đã phân tích)', async () => {
+    authenticateMock.mockResolvedValue({ user: { role: 'staff' }, supabase: {} });
+
+    const fakeFile = { arrayBuffer: () => Promise.resolve(new ArrayBuffer(8)) };
+    const formData = new Map([['file', fakeFile]]);
+    const request = {
+      headers: { get: () => 'Bearer good-token' },
+      formData: () => Promise.resolve({ get: (key) => formData.get(key) }),
+    };
+
+    const response = await POST(request);
+
+    expect(response.status).toBe(403);
+    expect(runSmartImportMock).not.toHaveBeenCalled();
+  });
 });

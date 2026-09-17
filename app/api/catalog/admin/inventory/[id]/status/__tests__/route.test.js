@@ -41,4 +41,13 @@ describe('PUT /api/catalog/admin/inventory/[id]/status', () => {
 
     expect(response.status).toBe(404);
   });
+
+  it('trả 403 khi caller là staff (chỉ admin mới đổi trạng thái ICCID)', async () => {
+    authenticateMock.mockResolvedValue({ user: { role: 'staff' }, supabase: {} });
+
+    const response = await PUT(makeRequest({ status: 'sold' }), { params: Promise.resolve({ id: '1' }) });
+
+    expect(response.status).toBe(403);
+    expect(updateInventoryStatusAdminMock).not.toHaveBeenCalled();
+  });
 });

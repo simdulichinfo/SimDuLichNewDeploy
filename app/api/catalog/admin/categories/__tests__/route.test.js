@@ -99,4 +99,15 @@ describe('POST /api/catalog/admin/categories', () => {
     expect(body).toEqual({ message: 'Thiếu thông tin bắt buộc (name/slug/status).' });
     expect(createCategoryAdminMock).not.toHaveBeenCalled();
   });
+
+  it('trả 403 khi caller là staff (chỉ admin mới tạo danh mục)', async () => {
+    authenticateMock.mockResolvedValue({ user: { role: 'staff' }, supabase: {} });
+
+    const response = await POST(makePostRequest({ name: 'Lào', slug: 'lao', status: 'active' }));
+    const body = await response.json();
+
+    expect(response.status).toBe(403);
+    expect(body).toEqual({ message: 'Không đủ quyền truy cập.' });
+    expect(createCategoryAdminMock).not.toHaveBeenCalled();
+  });
 });

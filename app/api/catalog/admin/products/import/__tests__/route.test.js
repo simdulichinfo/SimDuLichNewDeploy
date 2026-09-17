@@ -84,4 +84,20 @@ describe('POST /api/catalog/admin/products/import', () => {
     expect(response.status).toBe(400);
     expect(body).toEqual({ message: 'Vui lòng chọn file để nhập.' });
   });
+
+  it('trả 403 khi caller là staff (chỉ admin mới nhập sản phẩm hàng loạt)', async () => {
+    authenticateMock.mockResolvedValue({ user: { role: 'staff' }, supabase: {} });
+
+    const fakeFile = { arrayBuffer: () => Promise.resolve(new ArrayBuffer(8)) };
+    const formData = new Map([['file', fakeFile]]);
+    const request = {
+      headers: { get: () => 'Bearer good-token' },
+      formData: () => Promise.resolve({ get: (key) => formData.get(key) }),
+    };
+
+    const response = await POST(request);
+
+    expect(response.status).toBe(403);
+    expect(runProductImportMock).not.toHaveBeenCalled();
+  });
 });
